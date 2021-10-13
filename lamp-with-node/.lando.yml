@@ -1,0 +1,12 @@
+name: lamp-with-node
+recipe: lamp
+config:
+  webroot: .
+services:
+  node:
+    type: node:14
+tooling:
+  npm:
+    service: node
+  node:
+    service: node

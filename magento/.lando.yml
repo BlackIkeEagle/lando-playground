@@ -1,0 +1,50 @@
+---
+name: magento
+keys: false
+recipe: lamp
+config:
+  webroot: pub
+  php: '7.4'
+  composer_version: 2
+  database: 'mysql:8.0'
+services:
+  appserver:
+    build_as_root:
+      - apt update -y
+      - apt install -y libxslt1-dev
+      - docker-php-ext-install xsl sockets
+  mailhog:
+    type: mailhog
+    portforward: false
+    hogfrom:
+      - appserver
+  database:
+    creds:
+      user: magento
+      password: magento
+      database: magento
+  redis:
+    type: redis:6
+  elastic:
+    type: elasticsearch:7
+proxy:
+  mailhog:
+    - mail-magento.lndo.site
+tooling:
+  install-magento:
+    description: clean install of magento
+    service: appserver
+    cmd:
+      - bin/magento setup:install -vvv --db-host=database --db-name=magento --db-user=magento --db-password=magento --backend-frontname=admin --base-url=http://magento.lndo.site --language=nl_BE --currency=EUR --timezone=Europe/Brussels --admin-lastname=demo --admin-firstname=demo --admin-email=demo@example.com --admin-user=admin --admin-password=MagentoDemo123! --use-secure=0 --use-rewrites=1 --use-secure-admin=0 --use-sample-data --session-save=redis --session-save-redis-host=redis --session-save-redis-db=0 --cache-backend=redis --cache-backend-redis-server=redis --cache-backend-redis-db=1 --page-cache=redis --page-cache-redis-server=redis --page-cache-redis-db=2 --page-cache-redis-compress-data=1 --search-engine=elasticsearch7 --elasticsearch-host=elastic
+      - bin/magento module:disable Magento_TwoFactorAuth
+      - bin/magento cache:flush
+
+  magento:
+    description: magento bin helper
+    service: appserver
+    cmd: bin/magento
+
+  magerun:
+    description: magerun bin helper
+    service: appserver
+    cmd: bin/n98-magerun2.phar

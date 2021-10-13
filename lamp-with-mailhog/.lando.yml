@@ -1,0 +1,13 @@
+name: lamp-with-mailhog
+recipe: lamp
+config:
+  webroot: .
+services:
+  mailhog:
+    type: mailhog
+    portforward: false
+    hogfrom:
+      - appserver
+proxy:
+  mailhog:
+    - mail-lamp-with-mailhog.lndo.site
